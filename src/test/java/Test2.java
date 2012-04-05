@@ -26,7 +26,7 @@ public class Test2{
   public void setUp() {
  
     try {
-      System.out.println("Hello, yes this is Test2 (setup)");
+      System.out.println("Hello, yes this is Setup Test2");
       //driver - use mysql jdbc driver= com.mysql.jdc.Driver
       //url to my mysql addressbook database= jdbc:mysql://localhost/addressbook
       mypool = new myConnectionPool	(DRIVER, URL,
@@ -58,7 +58,7 @@ public class Test2{
 
   @After
   public void tearDown() {
-    System.out.println("Testcase TearDowm");
+    System.out.println("TearDowm Test2");
  
      if (rs != null) {
 	try { rs.close(); }
@@ -143,6 +143,34 @@ public class Test2{
     	Assert.assertTrue( se.getMessage().equals("Connection limit reached"));
     }
   }
+
+  @Test
+  public void testCloseConnection() {	  
+    // check numavailconn, if it's zer0, release a connection 
+    // to move it from busy to avail 
+    // next, set origsize = get size of pool's avail connections
+    // delete 1 and assert numavailableconncetion = origsize - 1
+    // Then try to delete the same connection again and assert that
+    // you receive the sqlexception Cannot close this conncetion, it doesnt exist
+    System.out.println("Case4: Closing Connections ");
+    try {
+        Connection myconn = connectionArray.get(0);
+	if(mypool.numAvailableConnections() == 0) {
+		mypool.releaseConnection(myconn);
+	}
+        int origsize = mypool.numAvailableConnections();	
+        mypool.closeConnection(myconn);
+	int newsize = mypool.numAvailableConnections();
+	Assert.assertTrue( newsize == (origsize - 1));
+	mypool.closeConnection(myconn);
+    } catch (SQLException se) {
+    	Assert.assertTrue(se.getMessage().equals("Cannot close this connection, it doesnt exist"));
+    }
+  }
+
+
+
+
 } //public class Test2
 
 

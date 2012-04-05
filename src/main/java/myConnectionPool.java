@@ -236,4 +236,8 @@ public class myConnectionPool implements ConnectionPool, Runnable {
 		}
 	}
 
+	//for testing
+	public int numAvailableConnections() {
+		return availableConnections.size();
+	}
 }

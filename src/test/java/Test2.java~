@@ -140,9 +140,37 @@ public class Test2{
     try {
 	Connection conn = mypoolDoesntWait.getConnection();
     } catch (SQLException se) { 
-    	Assert.assertTrue( se.equals("Connection limit reached"));
+    	Assert.assertTrue( se.getMessage().equals("Connection limit reached"));
     }
   }
+
+  @Test
+  public void testCloseConnection() {	  
+    // check numavailconn, if it's zer0, release a connection 
+    // to move it from busy to avail 
+    // next, set origsize = get size of pool's avail connections
+    // delete 1 and assert numavailableconncetion = origsize - 1
+    // Then try to delete the same connection again and assert that
+    // you receive the sqlexception Cannot close this conncetion, it doesnt exist
+    System.out.println("Case4: Closing Connections ");
+    try {
+        Connection myconn = connectionArray.get(0);
+	if(mypool.numAvailableConnections() == 0) {
+		mypool.releaseConnection(myconn);
+	}
+        int origsize = mypool.numAvailableConnections();	
+        mypool.closeConnection(myconn);
+	int newsize = mypool.numAvailableConnections();
+	Assert.assertTrue( newsize == (origsize - 1));
+	mypool.closeConnection(myconn);
+    } catch (SQLException se) {
+    	Assert.assertTrue(se.getMessage().equals("Cannot close this connection, it doesnt exist"));
+    }
+  }
+
+
+
+
 } //public class Test2
 
 
